@@ -1,0 +1,51 @@
+# Update Base Deployment Image
+
+* name: Show Base Deployment Before Update
+  run: |
+  cat manifests/base/deployment.yaml
+
+* name: Update Base Deployment Image
+  run: |
+  sed -i 
+  "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}|g" 
+  manifests/base/deployment.yaml
+
+* name: Show Base Deployment After Update
+  run: |
+  cat manifests/base/deployment.yaml
+
+# Update Base Kustomization
+
+* name: Show Base Kustomization Before Update
+  run: |
+  cat manifests/base/kustomization.yaml
+
+* name: Update Base Kustomization Image
+  working-directory: manifests/base
+  run: |
+  kustomize edit set image 
+  docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+
+* name: Show Base Kustomization After Update
+  run: |
+  cat manifests/base/kustomization.yaml
+
+# Update Overlay Kustomizations
+
+* name: Update Overlay Image Tags
+  run: |
+  for env in dev staging prod; do
+  echo "Updating $env"
+
+  ```
+  cd manifests/overlays/$env
+
+  kustomize edit set image \
+    docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+
+  cat kustomization.yaml
+
+  cd -
+  ```
+
+  done
