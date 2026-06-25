@@ -85,14 +85,14 @@ jobs:
 #----------------------------------------------------------
       - name: Show Base Deployment Before Update
         run: |
-          cat manifests/base/deployment.yaml
+          cat manifests/base/deployment.yml
 
 #---------------------------------------
 #  Update Base Deployment Image Tag
 #---------------------------------------
       - name: Update Base Deployment Image Tag
         run: |
-          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}|g" manifests/base/deployment.yaml
+          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}|g" manifests/base/deployment.yml
 
 
 #----------------------------------------------------------
@@ -100,15 +100,15 @@ jobs:
 #----------------------------------------------------------
       - name: Show Base Deployment After Update
         run: |
-          cat manifests/base/deployment.yaml
+          cat manifests/base/deployment.yml
 
 # ----------------------------------------------------------
-# UPDATE BASE KUSTOMIZATION IMAGE TAG IN KUSTOMIZATION.YAML
+# UPDATE BASE KUSTOMIZATION IMAGE TAG IN KUSTOMIZATION.YML
 # ----------------------------------------------------------
 
       - name: Show Base Kustomization Before Update
         run: |
-           cat manifests/base/kustomization.yaml
+           cat manifests/base/kustomization.yml
 
       - name: Update Base Kustomization Image
         working-directory: manifests/base
@@ -117,11 +117,11 @@ jobs:
 
       - name: Show Base Kustomization After Update
         run: |
-          cat manifests/base/kustomization.yaml
+          cat manifests/base/kustomization.yml
 
 
 # ----------------------------------------------------------
-# UPDATE OVERLAY KUSTOMIZATION IMAGE TAGS IN KUSTOMIZATION.YAML
+# UPDATE OVERLAY KUSTOMIZATION IMAGE TAGS IN KUSTOMIZATION.YML
 # ----------------------------------------------------------
       - name: Update Overlay Image Tags
         run: |
@@ -129,7 +129,7 @@ jobs:
             echo "Updating $env"
             cd manifests/overlays/$env
             kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-            cat kustomization.yaml
+            cat kustomization.yml
             cd -
           done
 
@@ -138,7 +138,7 @@ jobs:
 #---------------------------------         
       - name: Show Dev Image Tag Before Update
         run: |
-            cat manifests/overlays/dev/kustomization.yaml
+            cat manifests/overlays/dev/kustomization.yml
 
 # #---------------------
 # # Update Dev image tag
@@ -154,7 +154,7 @@ jobs:
 # #---------------------------------         
 #       - name: Show Dev Image Tag After Update
 #         run: |
-#             cat manifests/overlays/dev/kustomization.yaml
+#             cat manifests/overlays/dev/kustomization.yml
 
 
 # #-------------------------------------
@@ -162,7 +162,7 @@ jobs:
 # #------------------------------------- 
 #       - name: Show Staging Image Tag Before Update
 #         run: |
-#             cat manifests/overlays/staging/kustomization.yaml
+#             cat manifests/overlays/staging/kustomization.yml
 
 # #-------------------------
 # # Update Staging image tag
@@ -179,7 +179,7 @@ jobs:
 # #-------------------------------------
 #       - name: Show Staging Image Tag After Update
 #         run: |
-#             cat manifests/overlays/staging/kustomization.yaml
+#             cat manifests/overlays/staging/kustomization.yml
 
 
 # #----------------------------------
@@ -187,7 +187,7 @@ jobs:
 # #----------------------------------
 #       - name: Show Prod Image Tag after Update
 #         run: |
-#             cat manifests/overlays/prod/kustomization.yaml
+#             cat manifests/overlays/prod/kustomization.yml
 
 
 # #----------------------
@@ -204,7 +204,7 @@ jobs:
 # #---------------------------------
 #       - name: Show Prod Image Tag after Update
 #         run: |
-#             cat manifests/overlays/prod/kustomization.yaml
+#             cat manifests/overlays/prod/kustomization.yml
 
 #---------------
 # Commit Changes
