@@ -207,7 +207,7 @@ jobs:
 #             cat manifests/overlays/prod/kustomization.yml
 #
 #---------------
-# Commit Changes
+# Commit Changes.
 #---------------
 
       - name: Commit Changes
