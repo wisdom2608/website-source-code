@@ -23,9 +23,8 @@ jobs:
     #       IMAGE_TAG=$(date -u +"%Y%m%d-%H%M%S")
     #       echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
       - name: Generate Image Tag
-        id: vars
-        run: |
-            echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+        id: date_time
+        run: echo "timestamp=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,11 +37,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-           docker build -t $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }} .   
+           docker build -t $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }} .   
 
       - name: Push Docker Image
         run: |
-          docker push $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+          docker push $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
     
     # -------------------------------------------------------------------------------------------------
     # The commented steps below build and push docker images with both timestap tag and latest tag
@@ -51,12 +50,12 @@ jobs:
     #   - name: Build Docker Image
     #     run: |
     #       docker build \
-    #         -t $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }} \
+    #         -t $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }} \
     #         -t $IMAGE_NAME:latest \
     #          .
     #   - name: Push Docker Image
     #     run: |
-    #       docker push $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+    #       docker push $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
     #       docker push $IMAGE_NAME:latest
 
       - name: Checkout Kubernetes Manifests Repository
@@ -92,7 +91,7 @@ jobs:
 #---------------------------------------
       - name: Update Base Deployment Image Tag
         run: |
-          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}|g" manifests/base/deployment.yml
+          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}|g" manifests/base/deployment.yml
 
 
 #----------------------------------------------------------
@@ -113,7 +112,7 @@ jobs:
       - name: Update Base Kustomization Image
         working-directory: manifests/base
         run: |
-          kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+          kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
 
       - name: Show Base Kustomization After Update
         run: |
@@ -128,7 +127,7 @@ jobs:
           for env in dev staging prod; do
             echo "Updating $env"
             cd manifests/overlays/$env
-            kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+            kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
             cat kustomization.yml
             cd -
           done
@@ -148,7 +147,7 @@ jobs:
             echo "No changes detected"
             exit 0
           fi
-            git commit -m "Update website image tag to ${{ steps.vars.outputs.IMAGE_TAG }}"  
+            git commit -m "Update website image tag to ${{ steps.date_time.outputs.timestamp }}"  
 
 # -----------------------------------------------------------------------
 #   Push changes: Pushes the updated manifests repository back to GitHub.
