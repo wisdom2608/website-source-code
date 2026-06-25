@@ -1,3 +1,4 @@
+```yml
 name: Build Push and Update K8s Manifests
 
 on:
@@ -199,7 +200,7 @@ jobs:
         run: |
           git push origin main
 
-
+```
 **Argo CD Structure (Recommended)**
 
 If using GitOps with Argo CD:
