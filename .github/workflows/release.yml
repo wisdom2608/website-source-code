@@ -97,7 +97,7 @@ jobs:
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
 
 #---------------------------------
-# Show Dev image tag after update
+# Show Dev image tag after update.
 #---------------------------------         
       - name: Show Dev Image Tag After Update
         run: |
