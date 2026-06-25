@@ -62,7 +62,7 @@ jobs:
       - name: Checkout Kubernetes Manifests Repository
         uses: actions/checkout@v4
         with:
-          repository: website-k8s-manifests
+          repository: wisdom2608/website-k8s-manifests
           token: ${{ secrets.MANIFESTS_REPO_TOKEN }}
           path: manifests
 #----------------------------------------------------------------------------------
