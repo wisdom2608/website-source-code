@@ -133,79 +133,22 @@ jobs:
             cd -
           done
 
-#---------------------------------
-# Show Dev image tag befor update
-#---------------------------------         
-      - name: Show Dev Image Tag Before Update
+# -------------------------------------------------------------
+# Verify that the image tags have been updated in the overlays
+# -------------------------------------------------------------
+
+      - name: Verify Dev Overlay
         run: |
-            cat manifests/overlays/dev/kustomization.yml
+          kustomize build manifests/overlays/dev | grep image:
 
-# #---------------------
-# # Update Dev image tag
-# #---------------------
-#       - name: Update Dev Image Tag
-#         working-directory: manifests/overlays/dev
-#         run: |
-#           kustomize edit set image \
-#             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
+      - name: Verify Staging Overlay
+        run: |
+           kustomize build manifests/overlays/staging | grep image:
 
-# #---------------------------------
-# # Show Dev image tag after update.
-# #---------------------------------         
-#       - name: Show Dev Image Tag After Update
-#         run: |
-#             cat manifests/overlays/dev/kustomization.yml
+      - name: Verify Prod Overlay
+        run: |
+            kustomize build manifests/overlays/prod | grep image:
 
-
-# #-------------------------------------
-# # Show Staging image tag befor update
-# #------------------------------------- 
-#       - name: Show Staging Image Tag Before Update
-#         run: |
-#             cat manifests/overlays/staging/kustomization.yml
-
-# #-------------------------
-# # Update Staging image tag
-# #-------------------------
-#       - name: Update Staging Image Tag
-#         working-directory: manifests/overlays/staging
-#         run: |
-#           kustomize edit set image \
-#             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-
-
-# #-------------------------------------
-# # Show Staging image tag after update
-# #-------------------------------------
-#       - name: Show Staging Image Tag After Update
-#         run: |
-#             cat manifests/overlays/staging/kustomization.yml
-
-
-# #----------------------------------
-# # Show Prod image tag before update
-# #----------------------------------
-#       - name: Show Prod Image Tag after Update
-#         run: |
-#             cat manifests/overlays/prod/kustomization.yml
-
-
-# #----------------------
-# # Update Prod Image Tag
-# #----------------------
-#       - name: Update Prod Image Tag
-#         working-directory: manifests/overlays/prod
-#         run: |
-#           kustomize edit set image \
-#             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-
-# #---------------------------------
-# # Show Prod image tag after update
-# #---------------------------------
-#       - name: Show Prod Image Tag after Update
-#         run: |
-#             cat manifests/overlays/prod/kustomization.yml
-#
 #---------------
 # Commit Changes.
 #---------------
