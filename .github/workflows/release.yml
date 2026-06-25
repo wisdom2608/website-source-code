@@ -70,10 +70,15 @@ jobs:
 #----------------------------------------------------------------------------------
       - name: Install Kustomize
         run: |
-          curl -sLo kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/latest/download/kustomize_linux_amd64.tar.gz
+          VERSION=v5.7.1
+      
+          curl -L -o kustomize.tar.gz \
+            https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VERSION}/kustomize_${VERSION}_linux_amd64.tar.gz
+      
           tar -xzf kustomize.tar.gz
           chmod +x kustomize
           sudo mv kustomize /usr/local/bin/
+          kustomize version
 
 #---------------------------------
 # Show Dev image tag befor update
