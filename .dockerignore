@@ -1,0 +1,16 @@
+# A .dockerignore file prevents unecessary files and secrete files to be copied to a container when building a docker image. 
+# Example:
+Dockerfile
+.dockerignore
+.git
+.gitignore
+node_modules
+*.tfvars
+*.tf
+Notes.txt
+.*
+*.xml
+SonarQubeAnalysis.md
+Jenkinsfile
+README.md
+
