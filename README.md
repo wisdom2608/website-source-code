@@ -1,206 +1,3 @@
-```yml
-name: Build Push and Update K8s Manifests
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**/*' # This will trigger whenever there are changes in any file in the repository
-env:
-  IMAGE_NAME: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Source Repository
-        uses: actions/checkout@v4
-
-    #   - name: Generate Timestamp Tag
-    #     id: vars
-    #     run: |
-    #       IMAGE_TAG=$(date -u +"%Y%m%d-%H%M%S")
-    #       echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
-      - name: Generate Image Tag
-        id: vars
-        run: |
-            echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build Docker Image
-        run: |
-           docker build -t $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }} .   
-
-      - name: Push Docker Image
-        run: |
-          docker push $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-    
-    # -------------------------------------------------------------------------------------------------
-    # The commented steps below build and push docker images with both timestap tag and latest tag
-    # ------------------------------------------------------------------------------------------------
-
-    #   - name: Build Docker Image
-    #     run: |
-    #       docker build \
-    #         -t $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }} \
-    #         -t $IMAGE_NAME:latest \
-    #          .
-    #   - name: Push Docker Image
-    #     run: |
-    #       docker push $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-    #       docker push $IMAGE_NAME:latest
-
-      - name: Checkout Kubernetes Manifests Repository
-        uses: actions/checkout@v4
-        with:
-          repository: wisdom2608/website-k8s-manifests
-          token: ${{ secrets.MANIFESTS_REPO_TOKEN }}
-          path: manifests
-#----------------------------------------------------------------------------------
-# Downloads and installs Kustomize because later steps use kustomize edit set image
-#----------------------------------------------------------------------------------
-      - name: Install Kustomize
-        run: |
-          VERSION=v5.7.1
-      
-          curl -L -o kustomize.tar.gz \
-            https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VERSION}/kustomize_${VERSION}_linux_amd64.tar.gz
-      
-          tar -xzf kustomize.tar.gz
-          chmod +x kustomize
-          sudo mv kustomize /usr/local/bin/
-          kustomize version
-
-#----------------------------------------------------------
-# Show Base Image Tag in Deployment.yml File Before Update
-#----------------------------------------------------------
-      - name: Show Base Deployment Before Update
-        run: |
-          cat manifests/base/deployment.yml
-
-#---------------------------------------
-#  Update Base Deployment Image Tag
-#---------------------------------------
-      - name: Update Base Deployment Image Tag
-        run: |
-          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}|g" manifests/base/deployment.yml
-
-
-#----------------------------------------------------------
-# Show Base Image Tag in Deployment.yml File After Update
-#----------------------------------------------------------
-      - name: Show Base Deployment After Update
-        run: |
-          cat manifests/base/deployment.yml
-
-# ----------------------------------------------------------
-# UPDATE BASE KUSTOMIZATION IMAGE TAG IN KUSTOMIZATION.YML
-# ----------------------------------------------------------
-
-      - name: Show Base Kustomization Before Update
-        run: |
-           cat manifests/base/kustomization.yml
-
-      - name: Update Base Kustomization Image
-        working-directory: manifests/base
-        run: |
-          kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-
-      - name: Show Base Kustomization After Update
-        run: |
-          cat manifests/base/kustomization.yml
-
-
-# ----------------------------------------------------------
-# UPDATE OVERLAY KUSTOMIZATION IMAGE TAGS IN KUSTOMIZATION.YML
-# ----------------------------------------------------------
-      - name: Update Overlay Image Tags
-        run: |
-          for env in dev staging prod; do
-            echo "Updating $env"
-            cd manifests/overlays/$env
-            kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-            cat kustomization.yml
-            cd -
-          done
-
-#---------------------------------
-# Show Dev image tag befor update
-#---------------------------------         
-      - name: Show Dev Image Tag Before Update
-        run: |
-            cat manifests/overlays/dev/kustomization.yml
-
-# #---------------------
-# # Update Dev image tag
-# #---------------------
-#       - name: Update Dev Image Tag
-#         working-directory: manifests/overlays/dev
-#         run: |
-#           kustomize edit set image \
-#             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-
-# #---------------------------------
-# # Show Dev image tag after update.
-# #---------------------------------         
-#       - name: Show Dev Image Tag After Update
-#         run: |
-#             cat manifests/overlays/dev/kustomization.yml
-
-
-# #-------------------------------------
-# # Show Staging image tag befor update
-# #------------------------------------- 
-#       - name: Show Staging Image Tag Before Update
-#         run: |
-#             cat manifests/overlays/staging/kustomization.yml
-
-# #-------------------------
-# # Update Staging image tag
-# #-------------------------
-#       - name: Update Staging Image Tag
-#         working-directory: manifests/overlays/staging
-#         run: |
-#           kustomize edit set image \
-#             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.vars.outputs.IMAGE_TAG }}
-
-
-#---------------
-# Commit Changes.
-#---------------
-
-      - name: Commit Changes
-        working-directory: manifests
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add .
-            if git diff --cached --quiet; then
-            echo "No changes detected"
-            exit 0
-          fi
-            git commit -m "Update website image tag to ${{ steps.vars.outputs.IMAGE_TAG }}"  
-
-# -----------------------------------------------------------------------
-#   Push changes: Pushes the updated manifests repository back to GitHub.
-# -----------------------------------------------------------------------
-      - name: Push Changes
-        working-directory: manifests
-        run: |
-          git push origin main
-
-```
 **Argo CD Structure (Recommended)**
 
 If using GitOps with Argo CD:
@@ -260,7 +57,172 @@ This structure scales well, keeps application code separate from deployment conf
  - Update the image tag in all Kustomize overlays (dev, staging, prod) using kustomize edit set image.
  - Commit and push the changes back to the manifests repository.
 
+`release.yml`
 
+```yml
+name: Build Push and Update K8s Manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*' # This will trigger whenever there are changes in any file in the repository
+env:
+  IMAGE_NAME: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+
+    #   - name: Generate Timestamp Tag
+    #     id: vars
+    #     run: |
+    #       IMAGE_TAG=$(date -u +"%Y%m%d-%H%M%S")
+    #       echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: Generate Image Tag
+        id: date_time
+        run: echo "timestamp=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+           docker build -t $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }} .   
+
+      - name: Push Docker Image
+        run: |
+          docker push $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
+    
+    # -------------------------------------------------------------------------------------------------
+    # The commented steps below build and push docker images with both timestap tag and latest tag
+    # ------------------------------------------------------------------------------------------------
+
+    #   - name: Build Docker Image
+    #     run: |
+    #       docker build \
+    #         -t $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }} \
+    #         -t $IMAGE_NAME:latest \
+    #          .
+    #   - name: Push Docker Image
+    #     run: |
+    #       docker push $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
+    #       docker push $IMAGE_NAME:latest
+
+      - name: Checkout Kubernetes Manifests Repository
+        uses: actions/checkout@v4
+        with:
+          repository: wisdom2608/website-k8s-manifests
+          token: ${{ secrets.MANIFESTS_REPO_TOKEN }}
+          path: manifests
+#----------------------------------------------------------------------------------
+# Downloads and installs Kustomize because later steps use kustomize edit set image
+#----------------------------------------------------------------------------------
+      - name: Install Kustomize
+        run: |
+          VERSION=v5.7.1
+      
+          curl -L -o kustomize.tar.gz \
+            https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VERSION}/kustomize_${VERSION}_linux_amd64.tar.gz
+      
+          tar -xzf kustomize.tar.gz
+          chmod +x kustomize
+          sudo mv kustomize /usr/local/bin/
+          kustomize version
+
+#----------------------------------------------------------
+# Show Base Image Tag in Deployment.yml File Before Update
+#----------------------------------------------------------
+      - name: Show Base Deployment Before Update
+        run: |
+          cat manifests/base/deployment.yml
+
+#---------------------------------------
+#  Update Base Deployment Image Tag
+#---------------------------------------
+      - name: Update Base Deployment Image Tag
+        run: |
+          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}|g" manifests/base/deployment.yml
+
+
+#----------------------------------------------------------
+# Show Base Image Tag in Deployment.yml File After Update
+#----------------------------------------------------------
+      - name: Show Base Deployment After Update
+        run: |
+          cat manifests/base/deployment.yml
+
+# ----------------------------------------------------------
+# UPDATE BASE KUSTOMIZATION IMAGE TAG IN KUSTOMIZATION.YML
+# ----------------------------------------------------------
+
+      - name: Show Base Kustomization Before Update
+        run: |
+           cat manifests/base/kustomization.yml
+
+      - name: Update Base Kustomization Image
+        working-directory: manifests/base
+        run: |
+          kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
+
+      - name: Show Base Kustomization After Update
+        run: |
+          cat manifests/base/kustomization.yml
+
+
+# ----------------------------------------------------------
+# UPDATE OVERLAY KUSTOMIZATION IMAGE TAGS IN KUSTOMIZATION.YML
+# ----------------------------------------------------------
+      - name: Update Overlay Image Tags
+        run: |
+          for env in dev staging prod; do
+            echo "Updating $env"
+            cd manifests/overlays/$env
+            kustomize edit set image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website=$IMAGE_NAME:${{ steps.date_time.outputs.timestamp }}
+            cat kustomization.yml
+            cd -
+          done
+
+#---------------
+# Commit Changes.
+#---------------
+
+      - name: Commit Changes
+        working-directory: manifests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add .
+            if git diff --cached --quiet; then
+            echo "No changes detected"
+            exit 0
+          fi
+            git commit -m "Update website image tag to ${{ steps.date_time.outputs.timestamp }}"  
+
+# -----------------------------------------------------------------------
+#   Push changes: Pushes the updated manifests repository back to GitHub.
+# -----------------------------------------------------------------------
+      - name: Push Changes
+        working-directory: manifests
+        run: |
+          git push origin main
+```
+
+ **OR**
+
+ 
 ```yaml
 name: Build Push and Update K8s Manifests
 
