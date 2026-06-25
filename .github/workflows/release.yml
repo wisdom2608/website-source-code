@@ -133,31 +133,6 @@ jobs:
             cd -
           done
 
-# -------------------------------------------------------------
-# Verify that the image tags have been updated in the overlays
-# -------------------------------------------------------------
-
-      - name: Checkout Source Repository
-        uses: actions/checkout@v4
-
-      - name: Checkout Kubernetes Manifests Repository
-        uses: actions/checkout@v4
-        with:
-          repository: wisdom2608/website-k8s-manifests
-          path: manifests
-
-      - name: Verify Dev Overlay
-        run: |
-          kustomize build manifests/overlays/dev | grep image:
-
-      - name: Verify Staging Overlay
-        run: |
-           kustomize build manifests/overlays/staging | grep image:
-
-      - name: Verify Prod Overlay
-        run: |
-            kustomize build manifests/overlays/prod | grep image:
-
 #---------------
 # Commit Changes.
 #---------------
