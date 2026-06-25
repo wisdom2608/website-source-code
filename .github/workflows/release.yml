@@ -6,11 +6,6 @@ on:
       - main
     paths:
       - '**/*' # This will trigger whenever there are changes in any file in the repository
-<<<<<<< HEAD
-=======
-
->>>>>>> 4e5f32fdc5e1f448cd3c27025a2bd19f4cd8ff0a
-
 env:
   IMAGE_NAME: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/website
 
@@ -27,7 +22,7 @@ jobs:
     #     run: |
     #       IMAGE_TAG=$(date -u +"%Y%m%d-%H%M%S")
     #       echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
-      - name: Generate image tag
+      - name: Generate Image Tag
         id: vars
         run: |
             echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
