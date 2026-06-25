@@ -577,4 +577,5 @@ In your website-source-code repository, you should have:
 | `DOCKERHUB_TOKEN`      | `dckr_pat_xxxxx`   |
 | `MANIFESTS_REPO_TOKEN` | `github_pat_xxxxx` |
 
-...And it works 😆😂
+...And it works 😂
+
