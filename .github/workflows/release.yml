@@ -65,7 +65,7 @@ jobs:
           token: ${{ secrets.MANIFESTS_REPO_TOKEN }}
           path: manifests
 #----------------------------------------------------------------------------------
-# Downloads and installs Kustomize because later steps use kustomize edit set image
+# Download and install Kustomize because later steps use kustomize edit set image
 #----------------------------------------------------------------------------------
       - name: Install Kustomize
         run: |
