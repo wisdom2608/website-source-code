@@ -540,5 +540,8 @@ In your website-source-code repository, you should have:
 | `MANIFESTS_REPO_TOKEN` | `github_pat_xxxxx` |
 
 ...And it works 😂
+
 Wisdom 🩷
+
 Faesa ❤️
+My Own ✨❤️
